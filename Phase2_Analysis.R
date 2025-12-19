@@ -213,4 +213,46 @@ descriptives
 
 write_csv(merged, "merged_dataset.csv")
 
+# ============================
+# BACK-TO-BACK (PYRAMID) PLOT
+# Bins on Y-axis, counts mirrored on X-axis
+# ============================
+
+# ============================
+# BACK-TO-BACK (PYRAMID) PLOT
+# Bins on Y-axis, counts mirrored on X-axis
+# ============================
+
+library(tidyverse)
+
+ecom_pyramid <- ecom_all %>%
+  mutate(period = case_when(
+    year <= 2019 ~ "Pre-COVID (2013–2019)",
+    year >= 2020 ~ "Post-COVID (2020–2024)",
+    TRUE ~ NA_character_
+  )) %>%
+  drop_na(period, ecom_12m) %>%
+  mutate(
+    ecom_12m = as.numeric(ecom_12m),
+    bin = cut(
+      ecom_12m,
+      breaks = seq(0, 100, by = 5),
+      include.lowest = TRUE,
+      right = FALSE
+    )
+  ) %>%
+  count(bin, period) %>%
+  mutate(count_mirror = if_else(period == "Pre-COVID (2013–2019)", -n, n))
+
+ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period)) +
+  geom_col(width = 0.9) +
+  scale_x_continuous(labels = function(x) abs(x)) +
+  theme_minimal() +
+  labs(
+    title = "Back-to-back pyramid: Online shopping adoption (EU)",
+    subtitle = "Pre-COVID (2013–2019) vs Post-COVID (2020–2024)",
+    x = "Number of observations (mirrored)",
+    y = "Online shopping in last 12 months (%)",
+    fill = "Period"
+  )
 
