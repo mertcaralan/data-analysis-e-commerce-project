@@ -85,7 +85,7 @@ merged <- ecom_all %>%
 library(viridis)
 
 ggplot(ecom_all,
-       aes(x = year,
+       aes(x = factor(year),
            y = reorder(geo, ecom_12m, FUN = mean),
            fill = ecom_12m)) +
   geom_tile() +
@@ -93,7 +93,10 @@ ggplot(ecom_all,
     option = "C",
     name = "Percent"
   ) +
-  theme_minimal() +
+  theme_minimal() + 
+  theme(
+    legend.position = "bottom"
+  ) +
   labs(
     title = "Online purchases in the last 12 months (EU, 2013–2024)",
     x = "Year",
@@ -255,4 +258,32 @@ ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period)) +
     y = "Online shopping in last 12 months (%)",
     fill = "Period"
   )
+
+#----Butterfly Chart----#
+ecom_butterfly <- ecom_all %>%
+  filter(year %in% c(2019, 2024)) %>%
+  mutate(
+    value = ifelse(year == 2019, -ecom_12m, ecom_12m),
+    year = factor(year)
+  )
+
+ggplot(ecom_butterfly,
+       aes(x = reorder(geo, ecom_12m),
+           y = value,
+           fill = year)) +
+  geom_col(width = 0.8) +
+  coord_flip() +
+  scale_y_continuous(labels = abs) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  ) +
+  labs(
+    title = "Online purchases in the last 12 months (EU, 2019 vs 2024)",
+    x = "Country",
+    y = "Percent",
+    fill = "Year"
+  )
+
 
