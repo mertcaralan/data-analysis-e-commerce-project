@@ -84,48 +84,78 @@ merged <- ecom_all %>%
 
 library(viridis)
 
+country_order <- ecom_all %>%
+  group_by(geo) %>%
+  summarise(avg_ecom = mean(ecom_12m, na.rm = TRUE)) %>%
+  arrange(avg_ecom) %>%
+  pull(geo)
+
 ggplot(ecom_all,
-       aes(x = factor(year),
-           y = reorder(geo, ecom_12m, FUN = mean),
-           fill = ecom_12m)) +
-  geom_tile() +
+       aes(
+         x = factor(year),
+         y = factor(geo, levels = country_order),
+         fill = ecom_12m
+       )) +
+  geom_tile(color = "white", linewidth = 0.2) +
   scale_fill_viridis(
     option = "C",
     name = "Percent"
   ) +
   theme_minimal() + 
-  theme(
-    legend.position = "bottom"
-  ) +
+  theme(legend.position = "bottom") + 
   labs(
-    title = "Online purchases in the last 12 months (EU, 2013–2024)",
+    title = "Temporal evolution of online shopping adoption across EU countries",
+    subtitle = "Percentage of individuals who purchased online in the last 12 months (2013–2024)",
     x = "Year",
     y = "Country"
   )
 
 
-ggplot(ecom_all, aes(x = factor(year), y = ecom_12m)) +
-  geom_boxplot() +
-  theme_minimal() +
+
+
+
+
+library(tidyverse)
+
+# Make sure year is ordered (not alphabetical)
+ecom_all_box <- ecom_all %>%
+  mutate(
+    year = as.integer(year),
+    year_f = factor(year, levels = sort(unique(year))),
+    ecom_12m = as.numeric(ecom_12m)
+  )
+
+# Median per year (for a clean trend overlay)
+year_median <- ecom_all_box %>%
+  group_by(year_f) %>%
+  summarise(med = median(ecom_12m, na.rm = TRUE), .groups = "drop")
+
+ggplot(ecom_all_box, aes(x = year_f, y = ecom_12m)) +
+  geom_boxplot(
+    width = 0.6,
+    outlier.alpha = 0.15,
+    outlier.size = 1,
+    linewidth = 0.6
+  ) +
+  geom_point(
+    data = year_median,
+    aes(x = year_f, y = med),
+    inherit.aes = FALSE,
+    size = 2.2
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  ) +
   labs(
     title = "Distribution of online purchases across EU countries (2013–2024)",
+    subtitle = "Boxplots show yearly variability; points indicate the yearly median",
     x = "Year",
-    y = "Percent"
+    y = "Online shopping in last 12 months (%)"
   )
 
-ecom_last_year <- ecom_all %>%
-  filter(year == max(year, na.rm = TRUE))
 
-ggplot(ecom_last_year,
-       aes(x = reorder(geo, ecom_12m), y = ecom_12m, fill = geo)) +
-  geom_col() +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    title = paste0("Online purchases in the last 12 months (EU, ", max(ecom_last_year$year), ")"),
-    x = "Country",
-    y = "Percent"
-  )
 
 # ============================
 # RELATIONSHIPS
@@ -141,29 +171,52 @@ merged <- merged %>%
     skills_value = as.numeric(skills_value)
   )
 
-# Internet access vs online shopping
-ggplot(merged %>% drop_na(netacc_value, ecom_12m),
-       aes(x = netacc_value, y = ecom_12m)) +
-  geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", se = FALSE) +
-  theme_minimal() +
+
+library(tidyverse)
+
+rel_netacc <- merged %>%
+  drop_na(netacc_value, ecom_12m) %>%
+  group_by(geo, year) %>%
+  summarise(
+    netacc = mean(as.numeric(netacc_value), na.rm = TRUE),
+    ecom   = mean(as.numeric(ecom_12m), na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(rel_netacc, aes(x = netacc, y = ecom)) +
+  geom_point(alpha = 0.55, size = 2) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
+  theme_minimal(base_size = 12) +
   labs(
-    title = "Internet access vs online shopping (EU, 2013–2024)",
+    title = "Internet access is associated with online shopping adoption",
+    subtitle = "EU country-year averages (2013–2024)",
     x = "Internet access (%)",
     y = "Online shopping in last 12 months (%)"
   )
 
-# GDP per capita vs online shopping
-ggplot(merged %>% drop_na(gdp_value, ecom_12m),
-       aes(x = gdp_value, y = ecom_12m)) +
-  geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", se = FALSE) +
-  theme_minimal() +
+
+library(tidyverse)
+
+rel_gdp <- merged %>%
+  drop_na(gdp_value, ecom_12m) %>%
+  mutate(
+    gdp = as.numeric(gdp_value),
+    ecom = as.numeric(ecom_12m)
+  ) %>%
+  filter(gdp > 0)
+
+ggplot(rel_gdp, aes(x = gdp, y = ecom)) +
+  geom_point(alpha = 0.5, size = 2) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
+  scale_x_log10() +
+  theme_minimal(base_size = 12) +
   labs(
-    title = "GDP per capita vs online shopping (EU, 2013–2024)",
-    x = "Real GDP per capita (PPS)",
+    title = "GDP per capita relates to online shopping adoption",
+    subtitle = "Log scale improves readability across countries (2013–2024)",
+    x = "Real GDP per capita (PPS, log scale)",
     y = "Online shopping in last 12 months (%)"
   )
+
 
 # Broadband coverage vs online shopping
 ggplot(merged %>% drop_na(broad_value, ecom_12m),
@@ -216,10 +269,6 @@ descriptives
 
 write_csv(merged, "merged_dataset.csv")
 
-# ============================
-# BACK-TO-BACK (PYRAMID) PLOT
-# Bins on Y-axis, counts mirrored on X-axis
-# ============================
 
 # ============================
 # BACK-TO-BACK (PYRAMID) PLOT
