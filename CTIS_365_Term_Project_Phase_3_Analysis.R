@@ -21,6 +21,10 @@ eu_countries <- c(
   "Slovakia", "Slovenia", "Spain", "Sweden"
 )
 
+if (!dir.exists("plots")) {
+  dir.create("plots")
+}
+
 # ----------------------------
 # 2) Load datasets
 # ----------------------------
@@ -131,7 +135,7 @@ country_order <- ecom_all %>%
   arrange(desc(avg_ecom)) %>%
   pull(geo)
 
-ggplot(ecom_all,
+p_heatmap <- ggplot(ecom_all,
        aes(
          x = factor(year),
          y = factor(geo, levels = country_order),
@@ -148,6 +152,8 @@ ggplot(ecom_all,
     y = "Country"
   )
 
+ggsave("plots/fig1_heatmap.png", p_heatmap, width = 10, height = 6, dpi = 300)
+
 # ----------------------------
 # 7.2 Boxplot: yearly distribution across countries (same logic, improved)
 # ----------------------------
@@ -162,7 +168,7 @@ year_median <- ecom_all_box %>%
   group_by(year_f) %>%
   summarise(med = median(ecom_12m, na.rm = TRUE), .groups = "drop")
 
-ggplot(ecom_all_box, aes(x = year_f, y = ecom_12m)) +
+p_boxplot <- ggplot(ecom_all_box, aes(x = year_f, y = ecom_12m)) +
   geom_boxplot(
     width = 0.6,
     outlier.alpha = 0.15,
@@ -187,6 +193,9 @@ ggplot(ecom_all_box, aes(x = year_f, y = ecom_12m)) +
     y = "Online shopping in last 12 months (%)"
   )
 
+ggsave("plots/fig2_boxplot.png", p_boxplot, width = 10, height = 6, dpi = 300)
+
+
 # ============================================================
 # 8) VISUALIZATIONS - RELATIONSHIPS
 # ============================================================
@@ -203,7 +212,7 @@ rel_netacc <- merged %>%
     .groups = "drop"
   )
 
-ggplot(rel_netacc, aes(x = netacc, y = ecom)) +
+p_netacc <- ggplot(rel_netacc, aes(x = netacc, y = ecom)) +
   geom_point(alpha = 0.55, size = 2) +
   geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
   theme_minimal(base_size = 12) +
@@ -213,6 +222,8 @@ ggplot(rel_netacc, aes(x = netacc, y = ecom)) +
     x = "Internet access (%)",
     y = "Online shopping in last 12 months (%)"
   )
+
+ggsave("plots/fig3_netacc_scatter.png", p_netacc, width = 8, height = 6, dpi = 300)
 
 # ----------------------------
 # 8.2 GDP per capita vs e-commerce (log scale for readability)
@@ -225,7 +236,7 @@ rel_gdp <- merged %>%
   ) %>%
   filter(gdp > 0)
 
-ggplot(rel_gdp, aes(x = gdp, y = ecom)) +
+p_gdp <- ggplot(rel_gdp, aes(x = gdp, y = ecom)) +
   geom_point(alpha = 0.5, size = 2) +
   geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
   scale_x_log10() +
@@ -236,6 +247,8 @@ ggplot(rel_gdp, aes(x = gdp, y = ecom)) +
     x = "Real GDP per capita (PPS, log scale)",
     y = "Online shopping in last 12 months (%)"
   )
+
+ggsave("plots/fig4_gdp_scatter.png", p_gdp, width = 8, height = 6, dpi = 300)
 
 # ----------------------------
 # 8.3 Digital skills vs e-commerce (2013–2019)
@@ -250,7 +263,7 @@ rel_skills <- merged %>%
     .groups = "drop"
   )
 
-ggplot(rel_skills, aes(x = skills, y = ecom)) +
+p_skills <- ggplot(rel_skills, aes(x = skills, y = ecom)) +
   geom_point(alpha = 0.7) +
   geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
   theme_minimal() +
@@ -259,6 +272,8 @@ ggplot(rel_skills, aes(x = skills, y = ecom)) +
     x = "Digital skills (%)",
     y = "Online shopping in last 12 months (%)"
   )
+
+ggsave("plots/fig5_skills_scatter.png", p_skills, width = 8, height = 6, dpi = 300)
 
 # ============================================================
 # 9) TABLES / SUMMARY OUTPUTS
@@ -313,7 +328,7 @@ ecom_pyramid <- ecom_all %>%
   count(bin, period) %>%
   mutate(count_mirror = if_else(period == "Pre-COVID (2013–2019)", -n, n))
 
-ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period)) +
+p_pyramid <- ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period)) +
   geom_col(width = 0.9) +
   scale_x_continuous(labels = function(x) abs(x)) +
   theme_minimal() +
@@ -324,6 +339,8 @@ ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period)) +
     y = "Online shopping in last 12 months (%)",
     fill = "Period"
   )
+
+ggsave("plots/fig6_pyramid.png", p_pyramid, width = 8, height = 6, dpi = 300)
 
 # ----------------------------
 # 10.2 Butterfly chart (2019 vs 2024 country comparison)
@@ -336,7 +353,7 @@ ecom_butterfly <- ecom_all %>%
     year = factor(year)
   )
 
-ggplot(ecom_butterfly,
+p_butterfly <- ggplot(ecom_butterfly,
        aes(x = reorder(geo, ecom_12m),
            y = value,
            fill = year)) +
@@ -354,3 +371,6 @@ ggplot(ecom_butterfly,
     y = "Percent",
     fill = "Year"
   )
+
+ggsave("plots/fig7_butterfly.png", p_butterfly, width = 9, height = 7, dpi = 300)
+
