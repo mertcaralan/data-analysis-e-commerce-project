@@ -146,8 +146,6 @@ p_heatmap <- ggplot(ecom_all,
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(
-    title = "Temporal evolution of online shopping adoption across EU countries",
-    subtitle = "Percentage of individuals who purchased online in the last 12 months (2013–2024)",
     x = "Year",
     y = "Country"
   )
@@ -187,8 +185,6 @@ p_boxplot <- ggplot(ecom_all_box, aes(x = year_f, y = ecom_12m)) +
     panel.grid.minor = element_blank()
   ) +
   labs(
-    title = "Distribution of online purchases across EU countries (2013–2024)",
-    subtitle = "Boxplots show yearly variability; points indicate the yearly median",
     x = "Year",
     y = "Online shopping in last 12 months (%)"
   )
@@ -217,8 +213,6 @@ p_netacc <- ggplot(rel_netacc, aes(x = netacc, y = ecom)) +
   geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
   theme_minimal(base_size = 12) +
   labs(
-    title = "Internet access is associated with online shopping adoption",
-    subtitle = "EU country-year averages (2013–2024)",
     x = "Internet access (%)",
     y = "Online shopping in last 12 months (%)"
   )
@@ -242,8 +236,6 @@ p_gdp <- ggplot(rel_gdp, aes(x = gdp, y = ecom)) +
   scale_x_log10() +
   theme_minimal(base_size = 12) +
   labs(
-    title = "GDP per capita relates to online shopping adoption",
-    subtitle = "Log scale improves readability across countries (2013–2024)",
     x = "Real GDP per capita (PPS, log scale)",
     y = "Online shopping in last 12 months (%)"
   )
@@ -268,7 +260,6 @@ p_skills <- ggplot(rel_skills, aes(x = skills, y = ecom)) +
   geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
   theme_minimal() +
   labs(
-    title = "Digital skills vs Online shopping (EU, 2013–2019)",
     x = "Digital skills (%)",
     y = "Online shopping in last 12 months (%)"
   )
@@ -333,8 +324,6 @@ p_pyramid <- ggplot(ecom_pyramid, aes(x = count_mirror, y = bin, fill = period))
   scale_x_continuous(labels = function(x) abs(x)) +
   theme_minimal() +
   labs(
-    title = "Back-to-back pyramid: Online shopping adoption (EU)",
-    subtitle = "Pre-COVID (2013–2019) vs Post-COVID (2020–2024)",
     x = "Number of observations (mirrored)",
     y = "Online shopping in last 12 months (%)",
     fill = "Period"
@@ -366,7 +355,6 @@ p_butterfly <- ggplot(ecom_butterfly,
     legend.direction = "horizontal"
   ) +
   labs(
-    title = "Online purchases in the last 12 months (EU, 2019 vs 2024)",
     x = "Country",
     y = "Percent",
     fill = "Year"
