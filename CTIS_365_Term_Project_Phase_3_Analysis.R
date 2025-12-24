@@ -28,13 +28,13 @@ if (!dir.exists("plots")) {
 # ----------------------------
 # 2) Load datasets
 # ----------------------------
-before_raw <- read_csv("internet_purchases_by_individuals_before_2020.csv")
-after_raw  <- read_csv("internet_purchases_by_individuals_after_2020.csv")
+before_raw <- read_csv("data/internet_purchases_by_individuals_before_2020.csv")
+after_raw  <- read_csv("data/internet_purchases_by_individuals_after_2020.csv")
 
-netacc_raw <- read_csv("level_of_internet_access.csv")
-gdp_raw    <- read_csv("real_gdp_per_capita.csv")
-broad_raw  <- read_csv("broadband_internet_coverage_by_speed.csv")
-skills_raw <- read_csv("individuals_level_of_digital_skills.csv")
+netacc_raw <- read_csv("data/level_of_internet_access.csv")
+gdp_raw    <- read_csv("data/real_gdp_per_capita.csv")
+broad_raw  <- read_csv("data/broadband_internet_coverage_by_speed.csv")
+skills_raw <- read_csv("data/individuals_level_of_digital_skills.csv")
 
 # ----------------------------
 # 3) Helper function: build e-commerce in last 12 months
@@ -450,6 +450,54 @@ ggsave(
   dpi = 300,
   bg = "white"
 )
+
+
+# ============================================================
+# 12) Descriptive Statistics (Last Version Sorted / Quartiles Included)
+# ============================================================
+  
+library(dplyr)
+library(psych)
+
+numeric_vars <- merged %>%
+  select(ecom_12m, netacc_value, gdp_value, broad_value, skills_value)
+
+
+desc <- psych::describe(numeric_vars)
+
+# Quartiles added
+q1 <- apply(numeric_vars, 2, quantile, probs = 0.25, na.rm = TRUE)
+q3 <- apply(numeric_vars, 2, quantile, probs = 0.75, na.rm = TRUE)
+
+# Собираем таблицу EXACT как в PDF
+descriptives_all <- desc %>%
+  mutate(
+    `1st Qu.` = q1,
+    `3rd Qu.` = q3
+  ) %>%
+  select(
+    n,
+    mean,
+    sd,
+    median,
+    trimmed,
+    mad,
+    min,
+    max,
+    range,
+    `1st Qu.`,
+    `3rd Qu.`,
+    skew,
+    kurtosis,
+    se
+  )
+
+descriptives_all
+
+
+
+
+
 
 
 
