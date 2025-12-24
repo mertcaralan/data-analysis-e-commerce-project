@@ -362,3 +362,94 @@ p_butterfly <- ggplot(ecom_butterfly,
 
 ggsave("plots/fig7_butterfly.png", p_butterfly, width = 9, height = 7, dpi = 300)
 
+# ============================================================
+# 11) GRAPHICAL ABSTRACT (Light / Clean Version)
+# ============================================================
+
+library(ggplot2)
+library(tibble)
+
+ga_df <- tibble(
+  x = c(1, 2, 3),
+  y = c(1, 1, 1),
+  title = c("INPUTS (Eurostat)",
+            "PROCESS (R pipeline)",
+            "OUTPUTS (Phase 3)"),
+  text = c(
+    paste(
+      "• Online purchases (last 12 months)",
+      "• Internet access",
+      "• GDP per capita (PPS)",
+      "• Broadband coverage",
+      "• Digital skills",
+      sep = "\n"
+    ),
+    paste(
+      "• Cleaning & harmonization (EU, 2013–2024)",
+      "• Construct ecom_12m indicator",
+      "• Country–year panel merge",
+      "• Descriptive & visual analysis",
+      "• COVID comparison",
+      sep = "\n"
+    ),
+    paste(
+      "• Trends: heatmap & boxplots",
+      "• Relationships: access, GDP, skills",
+      "• COVID: pre vs post, 2019 vs 2024",
+      sep = "\n"
+    )
+  ),
+  fill = c("#E3F2FD", "#E8F5E9", "#F3E5F5")  # pastel colors
+)
+
+p_ga_light <- ggplot(ga_df, aes(x, y)) +
+  
+  # boxes
+  geom_label(
+    aes(label = paste0(title, "\n\n", text), fill = fill),
+    color = "black",
+    label.size = 0.4,
+    label.padding = unit(0.7, "lines"),
+    size = 4,
+    show.legend = FALSE
+  ) +
+  
+  scale_fill_identity() +
+  
+  # arrows
+  annotate("segment",
+           x = 1.35, xend = 1.65, y = 1, yend = 1,
+           arrow = arrow(length = unit(0.15, "inches")),
+           linewidth = 0.6, color = "grey40") +
+  
+  annotate("segment",
+           x = 2.35, xend = 2.65, y = 1, yend = 1,
+           arrow = arrow(length = unit(0.15, "inches")),
+           linewidth = 0.6, color = "grey40") +
+  
+  # title
+  annotate("text",
+           x = 2, y = 1.45,
+           label = "Graphical Abstract: E-Commerce Adoption & Digital Divide in the EU (2013–2024)",
+           size = 5.2, fontface = "bold") +
+  
+  # takeaway
+  annotate("text",
+           x = 2, y = 0.55,
+           label = "Key takeaway: Adoption increased after 2020, yet cross-country gaps persist.",
+           size = 4.2) +
+  
+  theme_void() +
+  coord_cartesian(xlim = c(0.5, 3.5), ylim = c(0.3, 1.55))
+
+ggsave(
+  "plots/graphical_abstract.png",
+  p_ga_light,
+  width = 14,
+  height = 6,
+  dpi = 300,
+  bg = "white"
+)
+
+
+
